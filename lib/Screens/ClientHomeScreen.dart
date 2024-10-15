@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:smartfin_guide/Authentication/LoginPage.dart';
 
 class ClientHomeScreen extends StatefulWidget {
-  final User user;
-
-  ClientHomeScreen({required this.user});
-
   @override
   _ClientHomeScreenState createState() => _ClientHomeScreenState();
 }
@@ -88,12 +85,38 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    CircleAvatar(
-                      backgroundImage: widget.user.photoURL != null
-                          ? NetworkImage(widget.user.photoURL!)
-                          : AssetImage('assets/default_avatar.png')
-                              as ImageProvider,
-                      radius: 20,
+                    GestureDetector(
+                      child: CircleAvatar(
+                        //backgroundImage: widget.user.photoURL != null
+                        //                           ? NetworkImage(widget.user.photoURL!)
+                        //                           : AssetImage('assets/default_avatar.png')
+                        //                               as ImageProvider,
+                        //                       radius: 20,
+                        //                     ),
+                        backgroundImage: AssetImage('assets/default_avatar.jpg')
+                        as ImageProvider,
+                        radius: 20,
+                      ),
+                      onTap: () async{
+                        await FirebaseAuth.instance.signOut();
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) =>
+                                LoginScreen(),
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOut;
+                              var tween = Tween(begin: begin, end: end)
+                                  .chain(CurveTween(curve: curve));
+                              var offsetAnimation = animation.drive(tween);
+                              return SlideTransition(
+                                  position: offsetAnimation, child: child);
+                            },
+                          ),
+                        );
+                      },
                     ),
                     GestureDetector(
                       onTap: () {
@@ -123,7 +146,8 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                 Padding(
                   padding: EdgeInsets.only(left: 3, bottom: 15),
                   child: Text(
-                    'Hi, ${widget.user.displayName ?? 'User'}',
+                 //   'Hi, ${widget.user.displayName ?? 'User'}',
+                    'Hi,Client',
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,

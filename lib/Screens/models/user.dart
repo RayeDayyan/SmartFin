@@ -1,31 +1,47 @@
 import 'dart:convert';
 
 class AppUser {
-  final String id;
   final String name;
   final String email;
+  final String organization;
+  final String phone;
+  final String pass;
+  String? role;
 
   AppUser({
-    required this.id,
     required this.name,
     required this.email,
+    required this.organization,
+    required this.phone,
+    required this.pass,
+    this.role
   });
 
   // Create an AppUser object from JSON
   factory AppUser.fromJson(Map<String, dynamic> json) {
     return AppUser(
-      id: json['id'],
       name: json['name'],
       email: json['email'],
+      organization: json['organization'],
+      phone: json['phone'],
+      pass: json['password'],
+      role:json['role'],
     );
   }
+
+
+
+
 
   // Convert AppUser object to JSON
   Map<String, dynamic> toJson() {
     return {
-      'id': id,
       'name': name,
       'email': email,
+      'organization':organization,
+      'password':pass,
+      'phone':phone,
+      'role':'client'
     };
   }
 }

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smartfin_guide/Authentication/adminSignup.dart';
+import 'package:smartfin_guide/Controllers/Services/UserController.dart';
 import 'package:smartfin_guide/Screens/AdminHomeScreen.dart';
+import 'package:smartfin_guide/Screens/ClientHomeScreen.dart';
 
 class LoginScreen extends StatefulWidget {
   @override
@@ -13,6 +15,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
+  final userController = UserController();
 
   Future<void> _signIn() async {
     setState(() {
@@ -20,18 +23,15 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      UserCredential userCredential = await _auth.signInWithEmailAndPassword(
-        email: _emailController.text,
-        password: _passwordController.text,
-      );
-      User? user = userCredential.user;
 
-      if (user != null) {
+      int result = await userController.signIn(_emailController.text.toString(),_passwordController.text.toString());
+
+
+      if (result == 1) {
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) =>
-                AdminHomeScreen(user: user),
+            pageBuilder: (context, animation, secondaryAnimation) =>AdminHomeScreen(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
               const begin = Offset(1.0, 0.0);
@@ -39,6 +39,27 @@ class _LoginScreenState extends State<LoginScreen> {
               const curve = Curves.easeInOut;
               var tween =
                   Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+              var offsetAnimation = animation.drive(tween);
+              return SlideTransition(
+                position: offsetAnimation,
+                child: child,
+              );
+            },
+          ),
+        );
+      } else if (result == 2) {
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                ClientHomeScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              const begin = Offset(1.0, 0.0);
+              const end = Offset.zero;
+              const curve = Curves.easeInOut;
+              var tween =
+              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
               var offsetAnimation = animation.drive(tween);
               return SlideTransition(
                 position: offsetAnimation,

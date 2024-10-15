@@ -1,7 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smartfin_guide/Screens/AdminHomeScreen.dart';
 import 'package:smartfin_guide/Authentication/LoginPage.dart';
+import 'package:smartfin_guide/Screens/models/user.dart';
+
+import '../Controllers/Services/UserController.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -17,6 +21,8 @@ class _SignUpPageState extends State<SignUpPage> {
   final _nameController = TextEditingController();
   final _organizationController = TextEditingController();
   final _phoneController = TextEditingController();
+
+  final userController = UserController();
 
   final _auth = FirebaseAuth.instance;
   bool _isLoading = false;
@@ -42,31 +48,36 @@ class _SignUpPageState extends State<SignUpPage> {
     // Check if passwords match
     if (_passwordController.text != _confirmPasswordController.text) {
       setState(() {
-        _errorMessage = 'Passwords do not match';
-        _isLoading = false;
+        _errorMessage='Passwords do not match';
+        _isLoading=false;
+      });
+      return;
+    }
+
+    if(_emailController.text.isEmpty || _passwordController.text.isEmpty || _nameController.text.isEmpty
+      || _organizationController.text.isEmpty || _phoneController.text.isEmpty){
+      setState(() {
+        _errorMessage='Incomplete Credentials';
+        _isLoading=false;
       });
       return;
     }
 
     try {
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      AppUser user = AppUser(
+            name: _nameController.text.toString(),
+            email: _emailController.text.toString(),
+            organization: _organizationController.text.toString(),
+            phone: _phoneController.text.toString(),
+            pass: _passwordController.text.toString());
 
-      // If the sign-up is successful, redirect to AdminHomeScreen
-      if (userCredential.user != null) {
-        // Optionally, set user display name and profile photo
-        await userCredential.user!.updateProfile(displayName: _nameController.text);
-        await userCredential.user!.reload();
-        final updatedUser = _auth.currentUser;
 
+      bool result = await userController.signUp(user);
+      if(result==true){
         Navigator.pushReplacement(
           context,
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => AdminHomeScreen(
-              user: updatedUser!,
-            ),
+            pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               const begin = Offset(1.0, 0.0);
               const end = Offset.zero;
@@ -89,9 +100,9 @@ class _SignUpPageState extends State<SignUpPage> {
           _isLoading = false;
         });
       }
-    } on FirebaseAuthException catch (e) {
+    } catch (e) {
       setState(() {
-        _errorMessage = e.message;
+        _errorMessage = e.toString();
         _isLoading = false;
       });
     }

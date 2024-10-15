@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:smartfin_guide/Authentication/LoginPage.dart';
 import 'package:smartfin_guide/Screens/Clients.dart';
 import 'package:smartfin_guide/Screens/InboxScreen.dart';
 import 'package:smartfin_guide/Screens/NotificationScreen.dart';
 import 'package:smartfin_guide/Screens/ProfileScreen.dart';
 import 'package:smartfin_guide/Screens/UpdateScreen.dart';
 
-class AdminHomeScreen extends StatefulWidget {
-  final User user;
-
-  AdminHomeScreen({required this.user});
-
+class AdminHomeScreen extends StatefulWidget{
   @override
-  _AdminHomeScreenState createState() => _AdminHomeScreenState();
+  State<AdminHomeScreen> createState() => _AdminHomeScreenState();
 }
 
 class _AdminHomeScreenState extends State<AdminHomeScreen> {
@@ -144,12 +141,43 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          CircleAvatar(
-                            backgroundImage: widget.user.photoURL != null
-                                ? NetworkImage(widget.user.photoURL!)
-                                : AssetImage('assets/default_avatar.png')
-                                    as ImageProvider,
-                            radius: 20,
+                          GestureDetector(
+                            child: CircleAvatar(
+                              //backgroundImage: widget.user.photoURL != null
+                              //                                 ? NetworkImage(widget.user.photoURL!)
+                              //                                 : AssetImage('assets/default_avatar.png')
+                              //                                     as ImageProvider,
+                              //                             radius: 20,
+                              //                           ),
+
+                              backgroundImage: AssetImage('assets/default_avatar.jpg')
+                              as ImageProvider,
+                              radius: 20,
+                            ),
+                            onTap: () async{
+                              await FirebaseAuth.instance.signOut();
+                              Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                  pageBuilder: (context, animation,
+                                  secondaryAnimation) =>
+                                  LoginScreen(),
+                              transitionsBuilder: (context, animation,
+                              secondaryAnimation, child) {
+                              const begin = Offset(1.0, 0.0);
+                              const end = Offset.zero;
+                              const curve = Curves.easeInOut;
+                              var tween = Tween(begin: begin, end: end)
+                                  .chain(CurveTween(curve: curve));
+                              var offsetAnimation =
+                              animation.drive(tween);
+                              return SlideTransition(
+                              position: offsetAnimation,
+                              child: child);
+                              },
+                              )
+                              );
+                            },
                           ),
                           GestureDetector(
                             onTap: () {
@@ -184,7 +212,8 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       Padding(
                         padding: EdgeInsets.only(left: 3, bottom: 15),
                         child: Text(
-                          'Hi, ${widget.user.displayName ?? 'User'}',
+//                          'Hi, ${widget.user.displayName ?? 'User'}',
+                          'Hi User',
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 18,

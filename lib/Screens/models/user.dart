@@ -7,6 +7,7 @@ class AppUser {
   final String phone;
   final String pass;
   String? role;
+  String? profile;
 
   AppUser({
     required this.name,
@@ -14,7 +15,8 @@ class AppUser {
     required this.organization,
     required this.phone,
     required this.pass,
-    this.role
+    this.role,
+    this.profile
   });
 
   // Create an AppUser object from JSON
@@ -26,6 +28,7 @@ class AppUser {
       phone: json['phone'],
       pass: json['password'],
       role:json['role'],
+      profile: json['profile']??null,
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartfin_guide/Controllers/Services/UserController.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
   @override
@@ -9,6 +10,25 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _oldPasswordController = TextEditingController();
   final _newPasswordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final userController = UserController();
+
+  void changePass()async{
+    if(_newPasswordController.text != _confirmPasswordController.text){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Passwords do not match!')));
+    }else{
+      bool result = await userController.changePass(_newPasswordController.text.toString(),_oldPasswordController.text.toString());
+
+      if(result==true){
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Password changed Successfully')));
+        Navigator.pop(context);
+
+      }else{
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error Occurred')));
+      }
+    }
+
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,8 +51,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
             _buildTextField(_confirmPasswordController, 'Confirm New Password'),
             SizedBox(height: 30),
             ElevatedButton(
-              onPressed: () {
-                // Validate and change password
+              onPressed: (){
+                changePass();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red, // Set the background color to red

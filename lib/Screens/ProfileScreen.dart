@@ -1,19 +1,21 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Add this import
 import 'package:smartfin_guide/Authentication/LoginPage.dart';
+import 'package:smartfin_guide/Controllers/Providers/UserProvider.dart';
 import 'package:smartfin_guide/Screens/About.dart';
 import 'package:smartfin_guide/Screens/ChangePasswordScreen.dart';
 import 'package:smartfin_guide/Screens/EditProfileScreen.dart';
 import 'package:smartfin_guide/main.dart'; // Import your login page here
 
-class ProfileScreen extends StatefulWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   @override
   _ProfileScreenState createState() => _ProfileScreenState();
 }
 
-class _ProfileScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   final ImagePicker _picker = ImagePicker();
   XFile? _profileImage;
 
@@ -32,7 +34,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: Text('Choose from Gallery'),
                 onTap: () async {
                   final pickedImage = await _picker.pickImage(source: ImageSource.gallery);
+                  _profileImage = pickedImage;
                   Navigator.pop(context, pickedImage);
+                  bool result = await userController.updatePicture(_profileImage!);
+                  if(result==true){
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Image updated successfully')));
+                  }else{
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload image')));
+                  }
+
                 },
               ),
               ListTile(
@@ -40,7 +50,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 title: Text('Take a Picture'),
                 onTap: () async {
                   final pickedImage = await _picker.pickImage(source: ImageSource.camera);
+                  _profileImage = pickedImage;
                   Navigator.pop(context, pickedImage);
+                  bool result = await userController.updatePicture(_profileImage!);
+
+                  if(result==true){
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Image updated successfully')));
+                  }else{
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to upload image')));
+                  }
+
+
                 },
               ),
               ListTile(
@@ -87,121 +107,134 @@ class _ProfileScreenState extends State<ProfileScreen> {
         automaticallyImplyLeading: false,
         title: Text('Profile', style: TextStyle(color: Colors.white)),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: ListView(
-          children: [
-            // Profile Image Section
-            Center(
-              child: Column(
+      body: ref.watch(userProvider).when(
+          data: (userData){
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: ListView(
                 children: [
-                  GestureDetector(
-                    onTap: _pickImage,
-                    child: Stack(
-                      alignment: Alignment.center,
+                  // Profile Image Section
+                  Center(
+                    child: Column(
                       children: [
-                        Container(
-                          width: 120,
-                          height: 120,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            image: DecorationImage(
-                              image: _profileImage != null
-                                  ? FileImage(File(_profileImage!.path))
-                                  : NetworkImage('https://img.freepik.com/free-photo/young-bearded-man-with-striped-shirt_273609-5677.jpg') as ImageProvider,
-                              fit: BoxFit.cover,
-                            ),
+                        GestureDetector(
+                          onTap: _pickImage,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              Container(
+                                width: 120,
+                                height: 120,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  image: DecorationImage(
+//                                    image: _profileImage != null
+//                                        ? FileImage(File(_profileImage!.path))
+//                                        : NetworkImage('https://img.freepik.com/free-photo/young-bearded-man-with-striped-shirt_273609-5677.jpg') as ImageProvider,
+
+                                    image: _profileImage!=null?FileImage(File(_profileImage!.path)):
+                                    (userData?.profile != null && userData!.profile!.isNotEmpty)
+                                        ? NetworkImage(userData!.profile!)
+                                        : AssetImage('assets/default_avatar.jpg') as ImageProvider,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 0,
+                                child: Container(
+                                  height: 35,
+                                  padding: EdgeInsets.all(0),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.black.withOpacity(0.4),
+                                  ),
+                                  child: IconButton(
+                                    icon: Icon(Icons.camera_alt, color: Colors.white, size: 20),
+                                    onPressed: _pickImage,
+                                    splashColor: Colors.white.withOpacity(0.5),
+                                    highlightColor: Colors.transparent,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        Positioned(
-                          bottom: 0,
-                          child: Container(
-                            height: 35,
-                            padding: EdgeInsets.all(0),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: Colors.black.withOpacity(0.4),
-                            ),
-                            child: IconButton(
-                              icon: Icon(Icons.camera_alt, color: Colors.white, size: 20),
-                              onPressed: _pickImage,
-                              splashColor: Colors.white.withOpacity(0.5),
-                              highlightColor: Colors.transparent,
-                            ),
-                          ),
-                        ),
+                        SizedBox(height: 20),
                       ],
                     ),
                   ),
-                  SizedBox(height: 20),
+                  // List Tiles
+                  ListTile(
+                    leading: Icon(Icons.person),
+                    iconColor: Colors.red,
+                    title: Text('Edit Profile', style: TextStyle(fontSize: 18)),
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        _createSlidePageRoute(EditProfileScreen()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.notifications),
+                    iconColor: Colors.red,
+                    title: Text('Notifications', style: TextStyle(fontSize: 18)),
+                    onTap: () {
+                      // Implement notifications functionality
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.language),
+                    iconColor: Colors.red,
+                    title: Text('Language', style: TextStyle(fontSize: 18)),
+                    onTap: () {
+                      // Implement language selection functionality
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.brightness_6),
+                    title: Text('Theme', style: TextStyle(fontSize: 18)),
+                    iconColor: Colors.red,
+                    onTap: _toggleTheme, // Toggle theme when tapped
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.info),
+                    title: Text('About', style: TextStyle(fontSize: 18)),
+                    iconColor: Colors.red,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        _createSlidePageRoute(AboutScreen()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.lock),
+                    title: Text('Change Password', style: TextStyle(fontSize: 18)),
+                    iconColor: Colors.red,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        _createSlidePageRoute(ChangePasswordScreen()),
+                      );
+                    },
+                  ),
+                  ListTile(
+                    leading: Icon(Icons.logout),
+                    iconColor: Colors.red,
+                    title: Text('Logout', style: TextStyle(fontSize: 18)),
+                    onTap: _logout, // Call logout functionality
+                  ),
                 ],
               ),
-            ),
-            // List Tiles
-            ListTile(
-              leading: Icon(Icons.person),
-              iconColor: Colors.red,
-              title: Text('Edit Profile', style: TextStyle(fontSize: 18)),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  _createSlidePageRoute(EditProfileScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.notifications),
-              iconColor: Colors.red,
-              title: Text('Notifications', style: TextStyle(fontSize: 18)),
-              onTap: () {
-                // Implement notifications functionality
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.language),
-              iconColor: Colors.red,
-              title: Text('Language', style: TextStyle(fontSize: 18)),
-              onTap: () {
-                // Implement language selection functionality
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.brightness_6),
-              title: Text('Theme', style: TextStyle(fontSize: 18)),
-              iconColor: Colors.red,
-              onTap: _toggleTheme, // Toggle theme when tapped
-            ),
-            ListTile(
-              leading: Icon(Icons.info),
-              title: Text('About', style: TextStyle(fontSize: 18)),
-              iconColor: Colors.red,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  _createSlidePageRoute(AboutScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.lock),
-              title: Text('Change Password', style: TextStyle(fontSize: 18)),
-              iconColor: Colors.red,
-              onTap: () {
-                Navigator.push(
-                  context,
-                  _createSlidePageRoute(ChangePasswordScreen()),
-                );
-              },
-            ),
-            ListTile(
-              leading: Icon(Icons.logout),
-              iconColor: Colors.red,
-              title: Text('Logout', style: TextStyle(fontSize: 18)),
-              onTap: _logout, // Call logout functionality
-            ),
-          ],
-        ),
-      ),
+            );
+          },
+          error: (error,stackTree){
+            return Center(child: Text('Error occured while fetching user data'),);
+          }, loading: (){
+            return CircularProgressIndicator();
+      })
     );
   }
 

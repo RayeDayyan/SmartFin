@@ -19,36 +19,52 @@ class _MainAuthState extends State<MainAuth> {
   @override
   void initState() {
     super.initState();
-    _checkUserStatus();
+    // Defer user status check to after the widget is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkUserStatus();
+    });
   }
 
   // Check user status
   void _checkUserStatus() async {
     User? currentUser = FirebaseAuth.instance.currentUser;
 
-    if (currentUser != null) {
-      final userID = currentUser.uid;
-      final userData = await _fireStore.collection('users').doc(userID).get();
-
-      if (userData.exists) {
-        AppUser appUser = AppUser.fromJson(userData.data()!);
-        String? role = appUser.role;
-
-        // Navigate based on role
-        if (role == 'admin') {
-          _navigateToAdmin();
-        } else if (role == 'client') {
-          _navigateToClient();
-        } else {
-          _signOutAndRedirect();
-        }
-      } else {
-        _signOutAndRedirect();
-      }
-    } else {
+    if (currentUser == null) {
       _redirectToLogin();
+      return;
+    }
+
+    final userID = currentUser.uid;
+    final userData = await _fireStore.collection('users').doc(userID).get();
+
+    if (!userData.exists) {
+      _signOutAndRedirect();
+      return;
+    }
+
+    final data = userData.data();
+    if (data == null) {
+      _signOutAndRedirect();
+      return;
+    }
+
+    AppUser appUser = AppUser.fromJson(data);
+    String? role = appUser.role;
+
+    if (role == null) {
+      _signOutAndRedirect();
+      return;
+    }
+
+    if (role == 'admin') {
+      _navigateToAdmin();
+    } else if (role == 'client') {
+      _navigateToClient();
+    } else {
+      _signOutAndRedirect();
     }
   }
+
 
   // Navigate to Admin screen
   void _navigateToAdmin() {

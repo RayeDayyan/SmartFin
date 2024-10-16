@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smartfin_guide/Authentication/LoginPage.dart';
+import 'package:smartfin_guide/Screens/ProfileScreen.dart';
 
 class ClientHomeScreen extends StatefulWidget {
   @override
@@ -267,6 +268,21 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
           setState(() {
             _currentIndex = index;
           });
+
+          // Navigate to different screens based on the selected index
+          if (index == 0) {
+            // Navigate to HomeScreen
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ClientHomeScreen()),
+            );
+          } else if (index == 2) {
+            // Navigate to ProfileScreen
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ProfileScreen()), // Add your Profile screen here
+            );
+          }
         },
         items: [
           BottomNavigationBarItem(
@@ -283,6 +299,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
           ),
         ],
       ),
+
     );
   }
 }

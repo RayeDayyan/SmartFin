@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:smartfin_guide/Controllers/Services/UserController.dart';
+import 'package:smartfin_guide/Screens/models/user.dart';
 
 class AddClientScreen extends StatefulWidget {
   @override
@@ -13,6 +15,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
   final Map<String, String> _formData = {};
   FilePickerResult? _selectedFile;
   String? _selectedFileName;
+  final userController = UserController();
   final TextEditingController _dobController = TextEditingController();
   final TextEditingController _ssnController = TextEditingController();
   @override
@@ -37,13 +40,10 @@ class _AddClientScreenState extends State<AddClientScreen> {
           child: Column(
             children: [
               _buildTextField('Full Legal Name'),
-              _buildOptionalTextField('Address'),
               _buildTextField('Email'),
-              _buildDateOfBirthField(),
-              _buildOptionalSSNField(),
-              _buildFilePickerField(),
-              if (_selectedFileName != null) _buildFileThumbnail(),
-              SizedBox(height: 20),
+              _buildTextField('Organization'),
+              _buildTextField('Phone Number'),
+              SizedBox(height: 45,),
               _buildAddButton(context),
             ],
           ),
@@ -52,13 +52,26 @@ class _AddClientScreenState extends State<AddClientScreen> {
     );
   }
 
+  Widget _buildIcon(String label){
+    if(label == 'Phone Number'){
+      return Icon(Icons.phone);
+    }
+    else if(label == 'Organization'){
+      return Icon(Icons.integration_instructions_rounded);
+    }
+    else return Icon(Icons.text_fields);
+
+
+  }
+
+
   Widget _buildTextField(String label) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
         decoration: InputDecoration(
           hintText: label,
-          prefixIcon: Icon(Icons.text_fields),
+          prefixIcon: _buildIcon(label),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
           ),
@@ -266,11 +279,28 @@ class _AddClientScreenState extends State<AddClientScreen> {
 
   Widget _buildAddButton(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
+      onPressed: () async{
         if (_formKey.currentState!.validate()) {
           _formKey.currentState!.save();
-          _saveClientDataToFirebase();
-          Navigator.pop(context);
+          //_saveClientDataToFirebase();
+          AppUser user = AppUser(
+              name: _formData['Full Legal Name']!,
+              email: _formData['Email']!,
+              organization: _formData['Organization']!,
+              phone: _formData['Phone Number']!,
+              pass: 'defaultpass');
+
+          bool result = await userController.addClient(user);
+
+          if(result == true){
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Client Added Successfully')));
+            Navigator.pop(context);
+
+          }
+          else{
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Unable to add client, Please try again!')));
+          }
+          //Navigator.pop(context);
         }
       },
       style: ElevatedButton.styleFrom(
@@ -280,7 +310,7 @@ class _AddClientScreenState extends State<AddClientScreen> {
         ),
         padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
       ),
-      child: Text('Add Client'),
+      child: Text('Add Client',style: TextStyle(color: Colors.black),),
     );
   }
 

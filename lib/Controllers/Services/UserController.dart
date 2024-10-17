@@ -232,7 +232,6 @@ class UserController {
         if(result==false){
           check=false;
         }
-        // Now register the user in Firebase}
       }
     }
     

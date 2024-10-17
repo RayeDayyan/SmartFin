@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:excel/excel.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
@@ -206,5 +207,42 @@ class UserController {
     }
   }
 
+  Future<void> processExcelFile(String path,BuildContext context) async {
+    final bytes = File(path).readAsBytesSync();
+    final excel = Excel.decodeBytes(bytes);
+
+    bool check = true;
+    for (var table in excel.tables.keys) {
+      for (var row in excel.tables[table]!.rows) {
+        // Assuming the first column is the client's email and second column is the name
+        var email = row[0]?.value; // Adjust indices as per your Excel structure
+        var name = row[1]?.value;
+        var organization = row[2]?.value;
+        var phone = row[3]?.value;
+
+        AppUser user = AppUser(
+            name: name.toString(),
+            email: email.toString(),
+            organization: organization.toString(),
+            phone: phone.toString(),
+            pass: 'defaultpass');
+
+        bool result = await UserController().addClient(user);
+
+        if(result==false){
+          check=false;
+        }
+        // Now register the user in Firebase}
+      }
+    }
+    
+    if(check==true){
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Successful Import')));
+
+    }else{
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to import')));
+
+    }
+  }
 }
 

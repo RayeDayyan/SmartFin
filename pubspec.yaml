@@ -54,6 +54,7 @@ dependencies:
   shared_preferences: ^2.2.3
   flutter_riverpod: ^2.5.3
   firebase_storage: ^12.3.3
+  excel: ^4.0.6
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,8 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smartfin_guide/Authentication/LoginPage.dart';
+import 'package:smartfin_guide/Controllers/Providers/UserProvider.dart';
 import 'package:smartfin_guide/Screens/Clients.dart';
 import 'package:smartfin_guide/Screens/InboxScreen.dart';
 import 'package:smartfin_guide/Screens/NotificationScreen.dart';
@@ -110,6 +112,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }).where((client) {
       return client['name']!.toLowerCase().contains(_searchQuery);
     }).toList();
+  }
+
+  Future<void> uploadExcelFile() async {
+    final result = await FilePicker.platform.pickFiles(type: FileType.custom, allowedExtensions: ['xlsx']);
+
+    if (result != null && result.files.isNotEmpty) {
+      String filePath = result.files.single.path!;
+      // Now you can read the Excel file from the path.
+      userController.processExcelFile(filePath,context);
+    }
   }
 
   @override
@@ -261,27 +273,32 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                         itemBuilder: (context, index) {
                           return GestureDetector(
                             onTap: () {
-                              Navigator.push(
-                                context,
-                                PageRouteBuilder(
-                                  pageBuilder: (context, animation,
-                                          secondaryAnimation) =>
-                                      Clients(),
-                                  transitionsBuilder: (context, animation,
-                                      secondaryAnimation, child) {
-                                    const begin = Offset(1.0, 0.0);
-                                    const end = Offset.zero;
-                                    const curve = Curves.easeInOut;
-                                    var tween = Tween(begin: begin, end: end)
-                                        .chain(CurveTween(curve: curve));
-                                    var offsetAnimation =
-                                        animation.drive(tween);
-                                    return SlideTransition(
-                                        position: offsetAnimation,
-                                        child: child);
-                                  },
-                                ),
-                              );
+                              if(catNames[index]=='Import'){
+                                    uploadExcelFile();
+                              }else{
+
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (context, animation,
+                                        secondaryAnimation) =>
+                                        Clients(),
+                                    transitionsBuilder: (context, animation,
+                                        secondaryAnimation, child) {
+                                      const begin = Offset(1.0, 0.0);
+                                      const end = Offset.zero;
+                                      const curve = Curves.easeInOut;
+                                      var tween = Tween(begin: begin, end: end)
+                                          .chain(CurveTween(curve: curve));
+                                      var offsetAnimation =
+                                      animation.drive(tween);
+                                      return SlideTransition(
+                                          position: offsetAnimation,
+                                          child: child);
+                                    },
+                                  ),
+                                );
+                              }
                             },
                             child: Column(
                               children: [

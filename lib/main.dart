@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smartfin_guide/Authentication/passreset.dart';
 import 'package:smartfin_guide/Screens/OnBoarding.dart';
 import 'package:smartfin_guide/Screens/splashScreen.dart';
 import 'package:smartfin_guide/Authentication/MainAuth.dart';
@@ -64,6 +65,7 @@ class _MyAppState extends State<MyApp> {
           backgroundColor: Colors.red,
         ),
       ),
+      // home: PasswordResetPage(),
       home: _onboardingSeen ? SplashScreen() : OnboardingScreen(),
     );
   }

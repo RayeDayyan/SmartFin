@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartfin_guide/Authentication/otpverify.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class PasswordResetPage extends StatefulWidget {
   const PasswordResetPage({Key? key}) : super(key: key);
@@ -93,14 +94,21 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
                     ),
                     SizedBox(height: 24),
                     ElevatedButton(
-                      onPressed: () {
+                      onPressed: () async {
                         if (_formKey.currentState!.validate()) {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => OtpVerificationPage(email: emailController.text),
-                            ),
-                          );
+                          try {
+                            await FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text);
+                            // Proceed to OTP Verification after sending the email
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => OtpVerificationPage(email: emailController.text),
+                              ),
+                            );
+                          } catch (e) {
+                            // Handle error (e.g., show a dialog with error message)
+                            print('Error: $e');
+                          }
                         }
                       },
                       style: ElevatedButton.styleFrom(

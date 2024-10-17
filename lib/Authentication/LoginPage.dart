@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smartfin_guide/Authentication/adminSignup.dart';
+import 'package:smartfin_guide/Authentication/passreset.dart';
 import 'package:smartfin_guide/Controllers/Services/UserController.dart';
 import 'package:smartfin_guide/Screens/AdminHomeScreen.dart';
 import 'package:smartfin_guide/Screens/ClientHomeScreen.dart';
@@ -195,6 +196,39 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                   ),
                 ),
+                SizedBox(
+                  height: 10,
+                ),
+                InkWell(
+                  onTap: (){
+                    Navigator.pushReplacement(
+                      context,
+                      PageRouteBuilder(
+                        pageBuilder:
+                            (context, animation, secondaryAnimation) =>
+                            PasswordResetPage(),
+                        transitionsBuilder: (context, animation,
+                            secondaryAnimation, child) {
+                          const begin = Offset(1.0, 0.0);
+                          const end = Offset.zero;
+                          const curve = Curves.easeInOut;
+
+                          var tween = Tween(begin: begin, end: end)
+                              .chain(CurveTween(curve: curve));
+                          var curvedAnimation = CurvedAnimation(
+                              parent: animation, curve: curve);
+                          var offsetAnimation =
+                          tween.animate(curvedAnimation);
+
+                          return SlideTransition(
+                            position: offsetAnimation,
+                            child: child,
+                          );
+                        },
+                      ),
+                    );
+                  },
+                    child: Text('Forgot Password?')),
                 SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

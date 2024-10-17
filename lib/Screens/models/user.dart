@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 class AppUser {
+
   final String name;
   final String email;
   final String organization;
@@ -10,6 +11,7 @@ class AppUser {
   String? profile;
 
   AppUser({
+
     required this.name,
     required this.email,
     required this.organization,

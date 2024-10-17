@@ -276,7 +276,15 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
               context,
               MaterialPageRoute(builder: (context) => ClientHomeScreen()),
             );
-          } else if (index == 2) {
+          }
+          if (index == 0) {
+            // Navigate to HomeScreen
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ClientHomeScreen()),
+            );
+          }
+          else if (index == 2) {
             // Navigate to ProfileScreen
             Navigator.pushReplacement(
               context,

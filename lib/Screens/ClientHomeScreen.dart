@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smartfin_guide/Authentication/LoginPage.dart';
 import 'package:smartfin_guide/Screens/ProfileScreen.dart';
+import 'package:smartfin_guide/Screens/client_chat_screen.dart';
 
 class ClientHomeScreen extends StatefulWidget {
   @override
@@ -282,6 +283,13 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (context) => ClientHomeScreen()),
+            );
+          }
+          else if (index == 1) {
+            // Navigate to ProfileScreen
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => ClientChatScreen()), // Add your Profile screen here
             );
           }
           else if (index == 2) {

@@ -9,6 +9,8 @@ import 'package:smartfin_guide/Screens/NotificationScreen.dart';
 import 'package:smartfin_guide/Screens/ProfileScreen.dart';
 import 'package:smartfin_guide/Screens/UpdateScreen.dart';
 
+import 'admin_client_list.dart';
+
 class AdminHomeScreen extends StatefulWidget{
   @override
   State<AdminHomeScreen> createState() => _AdminHomeScreenState();
@@ -460,6 +462,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             setState(() {
               _currentIndex = index;
             });
+
+            // Handle navigation based on the selected index
+            if (_currentIndex == 3) {
+              // Navigate to AdminClientList (Chat screen) when index is 3
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AdminClientList()),
+              );
+            }
+            // Handle other navigation indices here if needed
           },
           items: [
             BottomNavigationBarItem(
@@ -483,8 +495,16 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               ),
               label: 'Profile',
             ),
+            BottomNavigationBarItem(
+              icon: Icon(
+                Icons.chat,
+                color: _currentIndex == 3 ? Colors.red : Colors.grey,
+              ),
+              label: 'Chat',
+            ),
           ],
         ),
+
       ),
     );
   }

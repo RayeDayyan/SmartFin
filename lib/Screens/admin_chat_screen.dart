@@ -1,46 +1,48 @@
-// File: screens/admin_chat_screen.dart
-
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:smartfin_guide/Controllers/Services/firestore_service.dart';
+import 'package:smartfin_guide/Screens/models/message.dart';
 
-import '../Controllers/chat_controller.dart';
-
-class AdminChatScreen extends StatefulWidget {
-  final String adminEmail; // Change to use email
-
-  AdminChatScreen({required this.adminEmail});
-
-  @override
-  _AdminChatScreenState createState() => _AdminChatScreenState();
-}
-
-class _AdminChatScreenState extends State<AdminChatScreen> {
+class AdminChatScreen extends StatelessWidget {
+  final String clientEmail;
+  final FirestoreService _firestoreService = FirestoreService();
   final TextEditingController _messageController = TextEditingController();
-  final ChatController _chatController = ChatController();
+
+  AdminChatScreen({required this.clientEmail});
 
   @override
   Widget build(BuildContext context) {
+    final String adminEmail = FirebaseAuth.instance.currentUser!.email!;
+
     return Scaffold(
-      appBar: AppBar(title: Text("Chat with Clients")),
+      appBar: AppBar(title: Text("Chat with $clientEmail")),
       body: Column(
         children: [
           Expanded(
             child: StreamBuilder<List<Message>>(
-              stream: _chatController.getMessages(widget.adminEmail), // Use email
+              stream: _firestoreService.getMessages(clientEmail, adminEmail),
               builder: (context, snapshot) {
-                if (!snapshot.hasData) {
+                // Handle stream connection states
+                if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Center(child: Text('No messages yet.'));
+                } else {
+                  final messages = snapshot.data!;
+
+                  return ListView.builder(
+                    itemCount: messages.length,
+                    itemBuilder: (context, index) {
+                      final message = messages[index];
+                      return ListTile(
+                        title: Text(message.message),
+                        subtitle: Text(message.isAdmin ? "You (Admin)" : "Client"),
+                      );
+                    },
+                  );
                 }
-                final messages = snapshot.data!;
-                return ListView.builder(
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final msg = messages[index];
-                    return ListTile(
-                      title: Text(msg.message),
-                      subtitle: Text(msg.isAdmin ? 'Admin' : 'Client: ${msg.senderId}'),
-                    );
-                  },
-                );
               },
             ),
           ),
@@ -48,22 +50,17 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _messageController,
-                    decoration: InputDecoration(hintText: "Enter your message..."),
-                  ),
-                ),
+                Expanded(child: TextField(controller: _messageController)),
                 IconButton(
                   icon: Icon(Icons.send),
                   onPressed: () {
-                    if (_messageController.text.isNotEmpty) {
-                      _chatController.sendMessageToAllClients(
-                        widget.adminEmail, // Use email
-                        _messageController.text,
-                      );
-                      _messageController.clear();
-                    }
+                    _firestoreService.sendMessage(
+                      message: _messageController.text,
+                      senderEmail: adminEmail,  // Admin sending
+                      receiverEmail: clientEmail,  // Client receiving
+                      isAdmin: true,  // Message from admin
+                    );
+                    _messageController.clear();
                   },
                 ),
               ],

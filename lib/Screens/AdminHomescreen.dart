@@ -9,7 +9,7 @@ import 'package:smartfin_guide/Screens/NotificationScreen.dart';
 import 'package:smartfin_guide/Screens/ProfileScreen.dart';
 import 'package:smartfin_guide/Screens/UpdateScreen.dart';
 
-import 'admin_client_list.dart';
+
 
 class AdminHomeScreen extends StatefulWidget{
   @override
@@ -284,7 +284,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                   PageRouteBuilder(
                                     pageBuilder: (context, animation,
                                         secondaryAnimation) =>
-                                        Clients(),
+                                        AdminClientList(),
                                     transitionsBuilder: (context, animation,
                                         secondaryAnimation, child) {
                                       const begin = Offset(1.0, 0.0);
@@ -348,7 +348,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                             PageRouteBuilder(
                               pageBuilder:
                                   (context, animation, secondaryAnimation) =>
-                                      Clients(),
+                                      AdminClientList(),
                               transitionsBuilder: (context, animation,
                                   secondaryAnimation, child) {
                                 const begin = Offset(1.0, 0.0);
@@ -391,31 +391,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                       var client = filteredClients[index];
                       return GestureDetector(
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            PageRouteBuilder(
-                              pageBuilder:
-                                  (context, animation, secondaryAnimation) =>
-                                      InboxScreen(
-                                clientName: '',
-                                clientImage: '',
-                                clientId: '',
-                                client: {},
-                                clientMessages: null,
-                              ),
-                              transitionsBuilder: (context, animation,
-                                  secondaryAnimation, child) {
-                                const begin = Offset(1.0, 0.0);
-                                const end = Offset.zero;
-                                const curve = Curves.easeInOut;
-                                var tween = Tween(begin: begin, end: end)
-                                    .chain(CurveTween(curve: curve));
-                                var offsetAnimation = animation.drive(tween);
-                                return SlideTransition(
-                                    position: offsetAnimation, child: child);
-                              },
-                            ),
-                          );
+                          
                         },
                         child: Container(
                           margin: EdgeInsets.symmetric(horizontal: 10),

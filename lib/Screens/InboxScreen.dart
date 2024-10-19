@@ -194,6 +194,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                     Icons.access_time,
                     size: screenWidth * 0.04,
                     color: isAdmin ? Colors.white : Colors.black,
+
                   ),
               ],
             ),

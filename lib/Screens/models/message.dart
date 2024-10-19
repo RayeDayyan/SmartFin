@@ -3,8 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class Message {
   final bool isAdmin;
   final String message;
-  final String receiverEmail;  // Changed to email
-  final String senderEmail;    // Changed to email
+  final String receiverEmail; // Changed to email
+  final String senderEmail;   // Changed to email
   final DateTime timestamp;
 
   Message({
@@ -15,14 +15,16 @@ class Message {
     required this.timestamp,
   });
 
-  // Create a Message object from JSON
+  // Create a Message object from JSON, handle potential null timestamp
   factory Message.fromJson(Map<String, dynamic> json) {
     return Message(
-      isAdmin: json['isAdmin'],
-      message: json['message'],
-      receiverEmail: json['receiverEmail'],  // Updated key to email
-      senderEmail: json['senderEmail'],      // Updated key to email
-      timestamp: (json['timestamp'] as Timestamp).toDate(),
+      isAdmin: json['isAdmin'] ?? false, // Safeguard with a default value
+      message: json['message'] ?? '',
+      receiverEmail: json['receiverEmail'] ?? '',
+      senderEmail: json['senderEmail'] ?? '',
+      timestamp: (json['timestamp'] != null)
+          ? (json['timestamp'] as Timestamp).toDate()
+          : DateTime.now(), // Handle null timestamp with a default value
     );
   }
 
@@ -31,9 +33,9 @@ class Message {
     return {
       'isAdmin': isAdmin,
       'message': message,
-      'receiverEmail': receiverEmail,  // Updated key to email
-      'senderEmail': senderEmail,      // Updated key to email
-      'timestamp': timestamp,
+      'receiverEmail': receiverEmail,
+      'senderEmail': senderEmail,
+      'timestamp': Timestamp.fromDate(timestamp), // Ensure conversion to Timestamp
     };
   }
 }

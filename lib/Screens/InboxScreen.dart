@@ -21,7 +21,6 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
   @override
   Widget build(BuildContext context) {
     final String adminEmail = FirebaseAuth.instance.currentUser!.email!;
-
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
@@ -48,29 +47,32 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
             child: StreamBuilder<List<Message>>(
               stream: _firestoreService.getMessages(widget.clientEmail, adminEmail),
               builder: (context, snapshot) {
+                // Check for connection state before building the UI
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return Center(child: CircularProgressIndicator());
                 } else if (snapshot.hasError) {
                   return Center(child: Text('Error: ${snapshot.error}'));
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  // Show empty message state when there's no data
                   return Center(child: Text('No messages yet.'));
-                } else {
-                  final messages = snapshot.data!;
-
-                  return ListView.builder(
-                    itemCount: messages.length,
-                    itemBuilder: (context, index) {
-                      final message = messages[index];
-                      return _buildMessage(
-                          message.message,
-                          message.isAdmin,
-                          DateTime.now(), // Replace with actual timestamp
-                          screenWidth,
-                          false // Messages from Firestore are already sent
-                      );
-                    },
-                  );
                 }
+
+                final messages = snapshot.data!;
+
+                return ListView.builder(
+                  reverse: true, // Show new messages at the bottom
+                  itemCount: messages.length,
+                  itemBuilder: (context, index) {
+                    final message = messages[index];
+                    return _buildMessage(
+                      message.message,
+                      message.isAdmin,
+                      message.timestamp, // Use actual message timestamp
+                      screenWidth,
+                      false, // Messages from Firestore are already sent
+                    );
+                  },
+                );
               },
             ),
           ),
@@ -95,7 +97,6 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                   onPressed: () async {
                     if (_messageController.text.trim().isEmpty) return;
 
-                    // Clear any previous error state
                     setState(() {
                       _isSending = true;
                       _hasError = false;
@@ -110,7 +111,6 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                         isAdmin: true,
                       );
 
-                      // Clear the message controller and reset sending state
                       _messageController.clear();
                       setState(() {
                         _isSending = false;
@@ -133,7 +133,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
               child: _buildMessage(
                 _messageController.text,
                 true,
-                DateTime.now(),
+                DateTime.now(), // Temporary timestamp while sending
                 screenWidth,
                 true, // Show clock icon for unsent messages
               ),
@@ -179,7 +179,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                 ),
                 SizedBox(height: screenWidth * 0.01), // Responsive spacing
                 Text(
-                  '${timestamp.hour}:${timestamp.minute}',
+                  '${timestamp.hour}:${timestamp.minute}', // Display correct timestamp
                   style: TextStyle(
                     color: isAdmin ? Colors.white : Colors.black,
                     fontSize: screenWidth * 0.03, // Responsive font size

@@ -1,5 +1,6 @@
 // ignore_for_file: prefer_const_constructors
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:smartfin_guide/Screens/OnBoarding.dart';
 
@@ -16,6 +17,8 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState(){
     super.initState();
     _navigatetohome();
+    FirebaseMessaging.instance.subscribeToTopic("all_users");
+
   }
   _navigatetohome()async{
     await Future.delayed(Duration(milliseconds: 2000), (){});

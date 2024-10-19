@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartfin_guide/Authentication/LoginPage.dart';
 import 'package:smartfin_guide/Authentication/otpverify.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -98,11 +99,20 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
                         if (_formKey.currentState!.validate()) {
                           try {
                             await FirebaseAuth.instance.sendPasswordResetEmail(email: emailController.text);
+
+                            // Show SnackBar to notify the user
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text('Password reset email sent to your Gmail account.'),
+                                duration: Duration(seconds: 3),
+                              ),
+                            );
+
                             // Proceed to OTP Verification after sending the email
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => OtpVerificationPage(email: emailController.text),
+                                builder: (context) => LoginScreen(),
                               ),
                             );
                           } catch (e) {
@@ -111,6 +121,7 @@ class _PasswordResetPageState extends State<PasswordResetPage> {
                           }
                         }
                       },
+
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,

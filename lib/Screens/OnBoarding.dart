@@ -44,13 +44,25 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           Positioned(
             bottom: 36,
             left: 16,
-            child: _currentIndex < 2
-                ? GestureDetector(
-                    onTap: () {
-                      _pageController.animateToPage(
-                        2,
-                        duration: Duration(milliseconds: 400),
-                        curve: Curves.easeInOut,
+            child:
+                GestureDetector(
+                    onTap: () async{
+                      SharedPreferences prefs = await SharedPreferences.getInstance();
+                      await prefs.setBool('onboarding_seen', true);
+                      Navigator.pushReplacement(
+                        context,
+                        PageRouteBuilder(
+                          transitionDuration: Duration(milliseconds: 400),
+                          pageBuilder: (context, animation, secondaryAnimation) {
+                            return SlideTransition(
+                              position: Tween<Offset>(
+                                begin: Offset(1.0, 0.0),
+                                end: Offset.zero,
+                              ).animate(animation),
+                              child: MainAuth(),
+                            );
+                          },
+                        ),
                       );
                     },
                     child: Text(
@@ -60,8 +72,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         fontSize: 16,
                       ),
                     ),
-                  )
-                : SizedBox.shrink(),
+                  ),
           ),
           Positioned(
             bottom: 36,

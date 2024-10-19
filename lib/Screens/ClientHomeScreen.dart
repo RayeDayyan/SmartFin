@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:smartfin_guide/Authentication/LoginPage.dart';
+import 'package:smartfin_guide/Screens/NotificationScreen.dart';
 import 'package:smartfin_guide/Screens/ProfileScreen.dart';
 import 'package:smartfin_guide/Screens/client_chat_screen.dart';
 import '../Controllers/Services/firestore_service.dart';
@@ -85,7 +86,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
                         Navigator.push(
                           context,
                           PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) => NotificationScreen(),
+                            pageBuilder: (context, animation, secondaryAnimation) => UpdatesListScreen(),
                             transitionsBuilder: (context, animation, secondaryAnimation, child) {
                               const begin = Offset(1.0, 0.0);
                               const end = Offset.zero;
@@ -204,7 +205,7 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
         },
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-          BottomNavigationBarItem(icon: Icon(Icons.update), label: 'Updates'),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Message'),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
@@ -212,30 +213,4 @@ class _ClientHomeScreenState extends State<ClientHomeScreen> {
   }
 }
 
-class NotificationScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Notifications'),
-      ),
-      body: Center(
-        child: Text('Notification Screen'),
-      ),
-    );
-  }
-}
 
-class InboxScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Inbox'),
-      ),
-      body: Center(
-        child: Text('Inbox Screen'),
-      ),
-    );
-  }
-}

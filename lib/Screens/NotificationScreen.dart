@@ -1,55 +1,74 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart'; // For formatting date
 
-class NotificationScreen extends StatelessWidget {
-  final List<String> titles = [
-    'Meeting Reminder',
-    'New Client Added',
-    'System Update',
-    'Task Deadline Approaching',
-    'Feedback Received',
-  ];
-
-  final List<String> descriptions = [
-    'Don’t forget the meeting at 3 PM today.',
-    'A new client has been added to the system.',
-    'System update available. Please update.',
-    'The deadline for the task is approaching soon.',
-    'You have received new feedback.',
-  ];
-
-  final List<IconData> icons = [
-    Icons.access_alarm,
-    Icons.person_add,
-    Icons.system_update,
-    Icons.timer,
-    Icons.feedback,
-  ];
-
+class UpdatesListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        title: Text('Notifications', style: TextStyle(color: Colors.white),),
+        title: Text('All Updates', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.red,
       ),
-      body: ListView.builder(
-        itemCount: titles.length,
-        itemBuilder: (context, index) {
-          return Card(
-            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            elevation: 0,
-            child: ListTile(
-              leading: Icon(
-                icons[index],
-                color: Colors.red,
-              ),
-              title: Text(titles[index], style: TextStyle(fontWeight: FontWeight.bold)),
-              subtitle: Text(descriptions[index]),
-            ),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance.collection('updates').orderBy('timestamp', descending: true).snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          }
+
+          final updates = snapshot.data!.docs;
+
+          return ListView.builder(
+            itemCount: updates.length,
+            itemBuilder: (context, index) {
+              final update = updates[index];
+              DateTime timestamp = (update['timestamp'] as Timestamp).toDate();
+              String formattedDate = DateFormat('MMM d, y h:mm a').format(timestamp);
+
+              return Card(
+                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 2,
+                child: Padding(
+                  padding: EdgeInsets.all(12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        update['title'],
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        update['message'],
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      SizedBox(height: 12),
+                      Align(
+                        alignment: Alignment.bottomRight,
+                        child: Text(
+                          formattedDate,
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
           );
         },
       ),

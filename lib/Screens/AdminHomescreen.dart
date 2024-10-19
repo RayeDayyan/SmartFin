@@ -200,7 +200,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                                 PageRouteBuilder(
                                   pageBuilder: (context, animation,
                                           secondaryAnimation) =>
-                                      NotificationScreen(),
+                                      UpdatesListScreen(),
                                   transitionsBuilder: (context, animation,
                                       secondaryAnimation, child) {
                                     const begin = Offset(1.0, 0.0);
@@ -428,6 +428,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
             ),
             UpdateScreen(),
             ProfileScreen(),
+            AdminClientList()
           ],
         ),
         bottomNavigationBar: BottomNavigationBar(
@@ -439,14 +440,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
               _currentIndex = index;
             });
 
-            // Handle navigation based on the selected index
-            if (_currentIndex == 3) {
-              // Navigate to AdminClientList (Chat screen) when index is 3
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => AdminClientList()),
-              );
-            }
+            // // Handle navigation based on the selected index
+            // if (_currentIndex == 3) {
+            //   // Navigate to AdminClientList (Chat screen) when index is 3
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(builder: (context) => AdminClientList()),
+            //   );
+            // }
             // Handle other navigation indices here if needed
           },
           items: [

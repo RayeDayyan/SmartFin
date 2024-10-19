@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:smartfin_guide/Controllers/Services/firestore_service.dart';
+import 'package:smartfin_guide/Screens/ClientHomeScreen.dart';
+import 'package:smartfin_guide/Screens/ProfileScreen.dart';
 import 'package:smartfin_guide/Screens/models/message.dart';
 
 class ClientChatScreen extends StatefulWidget {
@@ -14,7 +16,7 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
   bool _isSending = false;
   bool _hasError = false;
   List<Message> _messages = []; // Store messages locally
-
+int _currentIndex=2;
   @override
   Widget build(BuildContext context) {
     final String clientEmail = FirebaseAuth.instance.currentUser!.email!;
@@ -37,6 +39,28 @@ class _ClientChatScreenState extends State<ClientChatScreen> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _currentIndex,
+        onTap: (index) {
+          setState(() {
+            _currentIndex = index;
+          });
+
+          // Navigate to different screens based on the selected index
+          if (index == 0) {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ClientHomeScreen()));
+          } else if (index == 1) {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ClientChatScreen()));
+          } else if (index == 2) {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProfileScreen()));
+          }
+        },
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.message), label: 'Message'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        ],
       ),
       body: Column(
         children: [

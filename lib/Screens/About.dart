@@ -4,8 +4,8 @@ import 'package:url_launcher/url_launcher.dart'; // Add this package to your pub
 class AboutScreen extends StatelessWidget {
   // Function to launch a URL
   Future<void> _launchURL(String url) async {
-    if (await canLaunch(url)) {
-      await launch(url);
+    if (await canLaunchUrl(url as Uri)) {
+      await launchUrl(url as Uri);
     } else {
       throw 'Could not launch $url';
     }

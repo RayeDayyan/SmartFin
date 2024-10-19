@@ -41,4 +41,6 @@ class AppUser {
       'role': role ?? 'client',
     };
   }
+
+
 }

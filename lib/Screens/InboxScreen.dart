@@ -17,6 +17,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   bool _isSending = false;
   bool _hasError = false;
+  List<Message> _messages = []; // Store messages locally
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +29,13 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
         title: Row(
           children: [
             CircleAvatar(
-              backgroundImage: NetworkImage(
-                  'https://via.placeholder.com/150'), // Client avatar here
+              backgroundImage: NetworkImage('https://via.placeholder.com/150'), // Client avatar here
             ),
-            SizedBox(width: screenWidth * 0.02), // Responsive spacing
+            SizedBox(width: screenWidth * 0.02),
             Expanded(
               child: Text(
                 widget.clientEmail,
-                overflow: TextOverflow.ellipsis, // Prevents text overflow
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -44,40 +44,57 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
       body: Column(
         children: [
           Expanded(
-            child: StreamBuilder<List<Message>>(
-              stream: _firestoreService.getMessages(widget.clientEmail, adminEmail),
-              builder: (context, snapshot) {
-                // Check for connection state before building the UI
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  // Show empty message state when there's no data
-                  return Center(child: Text('No messages yet.'));
-                }
+            child: Stack(
+              children: [
+                StreamBuilder<List<Message>>(
+                  stream: _firestoreService.getMessages(widget.clientEmail, adminEmail),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return Center(child: CircularProgressIndicator());
+                    } else if (snapshot.hasError) {
+                      return Center(child: Text('Error: ${snapshot.error}'));
+                    } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                      return Center(child: Text('No messages yet.'));
+                    }
 
-                final messages = snapshot.data!;
+                    final messages = snapshot.data!;
+                    _messages = messages; // Update local messages list
 
-                return ListView.builder(
-                  reverse: true, // Show new messages at the bottom
-                  itemCount: messages.length,
-                  itemBuilder: (context, index) {
-                    final message = messages[index];
-                    return _buildMessage(
-                      message.message,
-                      message.isAdmin,
-                      message.timestamp, // Use actual message timestamp
-                      screenWidth,
-                      false, // Messages from Firestore are already sent
+                    return ListView.builder(
+                      reverse: true,
+                      itemCount: _messages.length + (_isSending ? 1 : 0), // Add 1 for the unsent message
+                      itemBuilder: (context, index) {
+                        if (_isSending && index == 0) {
+                          // Render the unsent message at the top if still sending
+                          return _buildMessage(
+                            _messageController.text,
+                            true,
+                            DateTime.now(),
+                            screenWidth,
+                            true,
+                          );
+                        }
+
+                        // Render the actual messages from Firestore
+                        final message = _messages[index - (_isSending ? 1 : 0)]; // Adjust index
+                        return _buildMessage(
+                          message.message,
+                          message.isAdmin,
+                          message.timestamp,
+                          screenWidth,
+                          false,
+                        );
+                      },
                     );
                   },
-                );
-              },
+                ),
+              ],
             ),
           ),
-          Padding(
+          // Text field container
+          Container(
             padding: EdgeInsets.all(screenWidth * 0.02),
+            color: Colors.white,
             child: Row(
               children: [
                 Expanded(
@@ -88,7 +105,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15.0),
                       ),
-                      errorText: _hasError ? "Message failed to send" : null, // Show error text
+                      errorText: _hasError ? "Message failed to send" : null,
                     ),
                   ),
                 ),
@@ -103,7 +120,6 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                     });
 
                     try {
-                      // Attempt to send the message
                       await _firestoreService.sendMessage(
                         message: _messageController.text,
                         senderEmail: adminEmail,
@@ -116,7 +132,6 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                         _isSending = false;
                       });
                     } catch (e) {
-                      // Handle the error and show the error message
                       setState(() {
                         _hasError = true;
                         _isSending = false;
@@ -127,17 +142,6 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
               ],
             ),
           ),
-          if (_isSending)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _buildMessage(
-                _messageController.text,
-                true,
-                DateTime.now(), // Temporary timestamp while sending
-                screenWidth,
-                true, // Show clock icon for unsent messages
-              ),
-            ),
         ],
       ),
     );
@@ -146,18 +150,19 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
   Widget _buildMessage(String text, bool isAdmin, DateTime timestamp, double screenWidth, bool isSending) {
     return Padding(
       padding: EdgeInsets.symmetric(
-          vertical: screenWidth * 0.02, horizontal: screenWidth * 0.04), // Responsive padding
+        vertical: screenWidth * 0.02, horizontal: screenWidth * 0.04,
+      ),
       child: Align(
         alignment: isAdmin ? Alignment.centerRight : Alignment.centerLeft,
         child: ConstrainedBox(
           constraints: BoxConstraints(
-            maxWidth: screenWidth * 0.7, // Limit width to 70% of the screen width
+            maxWidth: screenWidth * 0.7,
           ),
           child: Container(
             padding: EdgeInsets.symmetric(
               vertical: screenWidth * 0.03,
               horizontal: screenWidth * 0.04,
-            ), // Responsive padding
+            ),
             decoration: BoxDecoration(
               color: isAdmin ? Colors.red : Colors.grey[300],
               borderRadius: BorderRadius.only(
@@ -168,8 +173,7 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
               ),
             ),
             child: Column(
-              crossAxisAlignment:
-              isAdmin ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+              crossAxisAlignment: isAdmin ? CrossAxisAlignment.end : CrossAxisAlignment.start,
               children: [
                 Text(
                   text,
@@ -177,18 +181,18 @@ class _AdminChatScreenState extends State<AdminChatScreen> {
                     color: isAdmin ? Colors.white : Colors.black,
                   ),
                 ),
-                SizedBox(height: screenWidth * 0.01), // Responsive spacing
+                SizedBox(height: screenWidth * 0.01),
                 Text(
-                  '${timestamp.hour}:${timestamp.minute}', // Display correct timestamp
+                  '${timestamp.hour}:${timestamp.minute}',
                   style: TextStyle(
                     color: isAdmin ? Colors.white : Colors.black,
-                    fontSize: screenWidth * 0.03, // Responsive font size
+                    fontSize: screenWidth * 0.03,
                   ),
                 ),
-                if (isSending) // Show clock icon if message is being sent
+                if (isSending)
                   Icon(
                     Icons.access_time,
-                    size: screenWidth * 0.04, // Small clock icon
+                    size: screenWidth * 0.04,
                     color: isAdmin ? Colors.white : Colors.black,
                   ),
               ],
